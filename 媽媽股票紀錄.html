@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StockTrack Mobile</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlN0b2NrVHJhY2sgTW9iaWxlIiwKICAic2hvcnRfbmFtZSI6ICJTdG9ja1RyYWNrIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICMwMDAwMDAKfQ==">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .up { color: #ef4444; }
+        .down { color: #22c55e; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        /* 隱藏捲軸但保持功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* 側邊欄抽屜效果 */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        .sidebar-open { transform: translateX(0) !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <header class="h-14 bg-white border-b flex items-center justify-between px-4 z-40 shrink-0">
+        <button onclick="toggleSidebar()" class="p-2 text-gray-600 text-xl">☰</button>
+        <h1 id="view-title" class="text-md font-bold text-gray-800 tracking-tight">首頁總覽</h1>
+        <button onclick="handleHeaderAdd()" class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold shadow-lg">+</button>
+    </header>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white z-50 border-r shadow-2xl -translate-x-full">
+        <div class="p-6 border-b flex justify-between items-center">
+            <span class="font-bold italic">StockTrack</span>
+            <button onclick="toggleSidebar()" class="text-gray-400">✕</button>
+        </div>
+        <div class="p-4">
+            <input type="text" id="sidebar-search" oninput="renderSidebar()" placeholder="搜尋股票..." 
+                class="w-full bg-gray-100 border-none rounded-xl py-2 px-3 text-sm outline-none mb-4">
+            <nav id="stock-list-menu" class="space-y-1 overflow-y-auto max-h-[70vh] no-scrollbar"></nav>
+        </div>
+    </aside>
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-45 hidden"></div>
+
+    <main class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        <div id="main-content"></div>
+        <div class="h-20"></div> </main>
+
+    <footer class="h-16 bg-white border-t flex items-center justify-around safe-area-bottom z-40 shrink-0">
+        <button onclick="showHome()" class="flex flex-col items-center gap-1 text-gray-600">
+            <span class="text-xl">🏠</span>
+            <span class="text-[10px] font-bold">首頁</span>
+        </button>
+        <button onclick="toggleSidebar()" class="flex flex-col items-center gap-1 text-gray-600">
+            <span class="text-xl">🔍</span>
+            <span class="text-[10px] font-bold">搜尋</span>
+        </button>
+    </footer>
+
+    <div id="modal" class="fixed inset-0 bg-black/60 hidden items-end sm:items-center justify-center z-[100]">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slide-up">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <h3 id="modal-title" class="text-lg font-bold mb-6 text-gray-800 text-center">新增價格記錄</h3>
+            <input type="hidden" id="edit-id">
+            <div class="space-y-5">
+                <input type="text" id="stockName" class="w-full bg-gray-50 rounded-xl p-4 outline-none focus:ring-2 focus:ring-black transition" placeholder="股票名稱">
+                <div class="flex gap-3">
+                    <input type="date" id="stockDate" class="flex-1 bg-gray-50 rounded-xl p-4 outline-none text-sm">
+                    <input type="number" id="stockPrice" step="0.01" class="flex-1 bg-gray-50 rounded-xl p-4 outline-none" placeholder="收盤價">
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold text-sm">取消</button>
+                    <button onclick="saveData()" class="flex-1 py-4 bg-black text-white rounded-xl font-bold text-sm shadow-lg">確認儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="note-modal" class="fixed inset-0 bg-black/60 hidden items-end sm:items-center justify-center z-[100]">
+        <div class="bg-white rounded-t-3xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold mb-4 text-gray-800">編輯除息備註</h3>
+            <input type="hidden" id="note-target-name">
+            <textarea id="note-content" rows="8" class="w-full bg-gray-50 border-none rounded-2xl p-4 outline-none text-sm resize-none mb-6" placeholder="紀錄除息日、配息金額..."></textarea>
+            <div class="flex gap-3">
+                <button onclick="closeNoteModal()" class="flex-1 py-4 text-gray-500 font-bold">取消</button>
+                <button onclick="saveNote()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心資料邏輯 (延續前版 v3 結構)
+        let stockData = JSON.parse(localStorage.getItem('stocks_v3')) || [];
+        let stockNotes = JSON.parse(localStorage.getItem('stock_notes_v3')) || {};
+        let pinnedStocks = JSON.parse(localStorage.getItem('pinned_stocks')) || [];
+        let currentViewContext = { type: 'home', name: '' };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('sidebar-open');
+            overlay.classList.toggle('hidden');
+        }
+
+        function renderSidebar() {
+            const menu = document.getElementById('stock-list-menu');
+            const searchQuery = document.getElementById('sidebar-search').value.toLowerCase();
+            const uniqueStocks = [...new Set(stockData.map(s => s.name))]
+                .filter(name => name.toLowerCase().includes(searchQuery))
+                .sort((a, b) => (pinnedStocks.includes(b) - pinnedStocks.includes(a)) || a.localeCompare(b));
+
+            menu.innerHTML = uniqueStocks.map(name => `
+                <button onclick="showStockDetail('${name}'); toggleSidebar();" 
+                    class="w-full text-left px-4 py-3 rounded-xl transition text-sm flex items-center justify-between ${currentViewContext.name === name ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}">
+                    <span>${name}</span>
+                    ${pinnedStocks.includes(name) ? '📌' : ''}
+                </button>
+            `).join('');
+        }
+
+        function showHome() {
+            currentViewContext = { type: 'home', name: '' };
+            document.getElementById('view-title').innerText = "首頁總覽";
+            renderSidebar();
+            const uniqueStocks = [...new Set(stockData.map(s => s.name))].sort((a, b) => (pinnedStocks.includes(b) - pinnedStocks.includes(a)));
+            const content = document.getElementById('main-content');
+            
+            content.innerHTML = `<div class="grid grid-cols-2 gap-3">
+                ${uniqueStocks.map(name => `
+                    <div onclick="showStockDetail('${name}')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative active:scale-95 transition">
+                        ${pinnedStocks.includes(name) ? '<span class="absolute top-2 right-2 text-[10px]">📌</span>' : ''}
+                        <h3 class="font-bold text-gray-800 text-sm truncate">${name}</h3>
+                        <p class="text-[10px] text-gray-400 mt-1 line-clamp-1">${stockNotes[name] || '點擊查看'}</p>
+                    </div>
+                `).join('')}
+            </div>`;
+        }
+
+        function showStockDetail(name) {
+            currentViewContext = { type: 'detail', name };
+            document.getElementById('view-title').innerText = name;
+            renderSidebar();
+            
+            const filtered = stockData.filter(s => s.name === name).sort((a, b) => new Date(a.date) - new Date(b.date));
+            const displayData = filtered.map((entry, index) => {
+                const prevEntry = index > 0 ? filtered[index - 1] : null;
+                const diff = prevEntry ? (entry.price - prevEntry.price).toFixed(1) : 0;
+                return { ...entry, diff: parseFloat(diff) };
+            }).reverse();
+
+            const note = stockNotes[name] || '尚未紀錄除息資訊...';
+
+            document.getElementById('main-content').innerHTML = `
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 relative">
+                    <button onclick="togglePin('${name}')" class="absolute top-4 right-4 text-lg">${pinnedStocks.includes(name) ? '📌' : '📍'}</button>
+                    <p class="text-blue-500 text-[10px] font-black uppercase mb-1">除息備註</p>
+                    <p class="text-gray-700 text-sm leading-relaxed mb-4">${note.replace(/\n/g, '<br>')}</p>
+                    <button onclick="openNoteModal('${name}')" class="w-full py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold">✎ 快速編輯備註</button>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+                    ${displayData.map(s => `
+                        <div class="flex items-center justify-between p-4 border-b border-gray-50 active:bg-gray-50" onclick="editEntry(${s.id})">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400 font-bold">${s.date}</span>
+                                <span class="text-md font-black text-gray-800">$ ${s.price}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-black ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.diff}</span>
+                                <button onclick="event.stopPropagation(); deleteEntry(${s.id}, '${name}')" class="ml-4 text-gray-200">✕</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+        }
+
+        // --- 以下邏輯與前版一致，僅彈窗 ID 對應優化 ---
+        function openNoteModal(name) {
+            document.getElementById('note-target-name').value = name;
+            document.getElementById('note-content').value = stockNotes[name] || '';
+            document.getElementById('note-modal').classList.replace('hidden', 'flex');
+        }
+        function closeNoteModal() { document.getElementById('note-modal').classList.replace('flex', 'hidden'); }
+        function saveNote() {
+            const name = document.getElementById('note-target-name').value;
+            stockNotes[name] = document.getElementById('note-content').value.trim();
+            localStorage.setItem('stock_notes_v3', JSON.stringify(stockNotes));
+            closeNoteModal(); showStockDetail(name);
+        }
+        function handleHeaderAdd() { openModal(currentViewContext.type === 'detail' ? currentViewContext.name : ''); }
+        function openModal(preName = '') {
+            document.getElementById('stockName').value = preName;
+            document.getElementById('stockName').disabled = !!preName;
+            document.getElementById('modal').classList.replace('hidden', 'flex');
+        }
+        function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); document.getElementById('edit-id').value = ''; }
+        function saveData() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('stockName').value.trim();
+            const date = document.getElementById('stockDate').value;
+            const price = parseFloat(document.getElementById('stockPrice').value);
+            if (!name || !date || isNaN(price)) return alert('請填寫完整');
+            if (id) {
+                const idx = stockData.findIndex(s => s.id == id);
+                stockData[idx] = { ...stockData[idx], name, date, price };
+            } else {
+                stockData.push({ id: Date.now(), name, date, price });
+            }
+            localStorage.setItem('stocks_v3', JSON.stringify(stockData));
+            closeModal(); showStockDetail(name);
+        }
+        function editEntry(id) {
+            const entry = stockData.find(s => s.id == id);
+            document.getElementById('edit-id').value = entry.id;
+            openModal(entry.name);
+            document.getElementById('stockDate').value = entry.date;
+            document.getElementById('stockPrice').value = entry.price;
+        }
+        function deleteEntry(id, name) { if(confirm("確定刪除？")) { stockData = stockData.filter(i => i.id !== id); localStorage.setItem('stocks_v3', JSON.stringify(stockData)); showStockDetail(name); } }
+        function togglePin(name) { pinnedStocks = pinnedStocks.includes(name) ? pinnedStocks.filter(n => n !== name) : [...pinnedStocks, name]; localStorage.setItem('pinned_stocks', JSON.stringify(pinnedStocks)); showStockDetail(name); }
+
+        showHome();
+    </script>
+</body>
+</html>
