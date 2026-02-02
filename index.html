@@ -3,92 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StockTrack Mobile</title>
+    <title>StockTrack Mobile Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .up { color: #ef4444; }
         .down { color: #22c55e; }
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; font-size: 18px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #sidebar { transition: transform 0.3s ease-in-out; }
         .sidebar-open { transform: translateX(0) !important; }
+        /* 強制加大輸入框字體防止安卓縮放 */
+        input, textarea { font-size: 18px !important; }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col h-screen overflow-hidden text-gray-800">
 
-    <header class="h-14 bg-white border-b flex items-center justify-between px-4 z-40 shrink-0">
-        <button onclick="toggleSidebar()" class="p-2 text-gray-600 text-xl">☰</button>
-        <h1 id="view-title" class="text-md font-bold text-gray-800 tracking-tight">首頁總覽</h1>
-        <button onclick="handleHeaderAdd()" class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold shadow-lg">+</button>
+    <header class="h-16 bg-white border-b flex items-center justify-between px-5 z-40 shrink-0">
+        <button onclick="toggleSidebar()" class="p-2 text-gray-600 text-2xl">☰</button>
+        <h1 id="view-title" class="text-xl font-bold tracking-tight">首頁總覽</h1>
+        <button onclick="handleHeaderAdd()" class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold shadow-lg">+</button>
     </header>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white z-50 border-r shadow-2xl -translate-x-full flex flex-col">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white z-50 border-r shadow-2xl -translate-x-full flex flex-col">
         <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-            <span class="font-bold italic text-gray-800">StockTrack</span>
-            <button onclick="toggleSidebar()" class="text-gray-400">✕</button>
+            <span class="font-bold italic text-xl">StockTrack</span>
+            <button onclick="toggleSidebar()" class="text-gray-400 text-2xl">✕</button>
         </div>
         
         <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
-            <button onclick="showHome(); toggleSidebar();" class="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold mb-4 shadow-sm border border-blue-100">
+            <button onclick="showHome(); toggleSidebar();" class="w-full flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-2xl font-bold mb-6 shadow-sm border border-blue-100 text-lg">
                 <span>🏠</span> <span>返回首頁總覽</span>
             </button>
             
-            <div class="relative mb-4">
-                <input type="text" id="sidebar-search" oninput="renderSidebar()" placeholder="搜尋股票..." 
-                    class="w-full bg-gray-50 border border-gray-100 rounded-xl py-2 px-3 text-sm outline-none">
-            </div>
-            
-            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1 mb-2">持股清單</div>
-            <nav id="stock-list-menu" class="space-y-1"></nav>
+            <div class="text-xs font-black text-gray-400 uppercase tracking-widest px-1 mb-3">持股清單</div>
+            <nav id="stock-list-menu" class="space-y-2"></nav>
         </div>
     </aside>
 
     <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-45 hidden"></div>
 
-    <main class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+    <main class="flex-1 overflow-y-auto p-4 space-y-5 no-scrollbar">
         <div id="main-content"></div>
-        <div class="h-20"></div>
+        <div class="h-24"></div>
     </main>
 
-    <footer class="h-16 bg-white border-t flex items-center justify-around z-40 shrink-0 pb-safe">
+    <footer class="h-20 bg-white border-t flex items-center justify-around z-40 shrink-0 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <button onclick="showHome()" class="flex flex-col items-center gap-1 text-gray-600">
-            <span class="text-xl">🏠</span><span class="text-[10px] font-bold">首頁</span>
+            <span class="text-2xl">🏠</span><span class="text-xs font-bold">首頁</span>
         </button>
         <button onclick="exportData()" class="flex flex-col items-center gap-1 text-blue-600">
-            <span class="text-xl">📥</span><span class="text-[10px] font-bold">備份</span>
+            <span class="text-2xl">📥</span><span class="text-xs font-bold">備份</span>
         </button>
         <button onclick="importData()" class="flex flex-col items-center gap-1 text-orange-600">
-            <span class="text-xl">📤</span><span class="text-[10px] font-bold">還原</span>
+            <span class="text-2xl">📤</span><span class="text-xs font-bold">還原</span>
         </button>
         <input type="file" id="importFile" class="hidden" onchange="processFile(this)">
     </footer>
 
     <div id="modal" class="fixed inset-0 bg-black/60 hidden items-end sm:items-center justify-center z-[100]">
-        <div class="bg-white rounded-t-3xl p-6 w-full max-w-md shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-bold mb-6 text-gray-800 text-center">新增價格記錄</h3>
+        <div class="bg-white rounded-t-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 id="modal-title" class="text-xl font-bold mb-6 text-center">新增價格記錄</h3>
             <input type="hidden" id="edit-id">
-            <div class="space-y-5">
-                <input type="text" id="stockName" class="w-full bg-gray-50 rounded-xl p-4 outline-none border border-transparent focus:border-black" placeholder="股票名稱">
-                <div class="flex gap-3">
-                    <input type="date" id="stockDate" class="flex-1 bg-gray-50 rounded-xl p-4 outline-none text-sm border border-transparent">
-                    <input type="number" id="stockPrice" step="0.01" class="flex-1 bg-gray-50 rounded-xl p-4 outline-none border border-transparent" placeholder="收盤價" autofocus>
+            <div class="space-y-6">
+                <input type="text" id="stockName" class="w-full bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100 focus:border-black" placeholder="股票名稱">
+                <div class="flex gap-4">
+                    <input type="date" id="stockDate" class="flex-1 bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100">
+                    <input type="number" id="stockPrice" step="0.01" class="flex-1 bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100" placeholder="收盤價" autofocus>
                 </div>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold">取消</button>
-                    <button onclick="saveData()" class="flex-1 py-4 bg-black text-white rounded-xl font-bold shadow-lg">確認儲存</button>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold text-lg">取消</button>
+                    <button onclick="saveData()" class="flex-1 py-4 bg-black text-white rounded-2xl font-bold text-lg shadow-lg">確認儲存</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="note-modal" class="fixed inset-0 bg-black/60 hidden items-end sm:items-center justify-center z-[100]">
-        <div class="bg-white rounded-t-3xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold mb-4 text-gray-800">編輯除息備註</h3>
+        <div class="bg-white rounded-t-3xl p-8 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">編輯除息備註</h3>
             <input type="hidden" id="note-target-name">
-            <textarea id="note-content" rows="6" class="w-full bg-gray-50 rounded-2xl p-4 outline-none text-sm resize-none mb-6" placeholder="輸入備註..."></textarea>
-            <div class="flex gap-3">
-                <button onclick="closeNoteModal()" class="flex-1 py-4 text-gray-400 font-bold">取消</button>
-                <button onclick="saveNote()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold">儲存</button>
+            <textarea id="note-content" rows="6" class="w-full bg-gray-50 rounded-2xl p-4 outline-none text-lg resize-none mb-6 border border-gray-100" placeholder="輸入備註..."></textarea>
+            <div class="flex gap-4">
+                <button onclick="closeNoteModal()" class="flex-1 py-4 text-gray-400 font-bold text-lg">取消</button>
+                <button onclick="saveNote()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg">儲存備註</button>
             </div>
         </div>
     </div>
@@ -106,10 +103,9 @@
 
         function renderSidebar() {
             const menu = document.getElementById('stock-list-menu');
-            const query = document.getElementById('sidebar-search').value.toLowerCase();
-            const unique = [...new Set(stockData.map(s => s.name))].filter(n => n.toLowerCase().includes(query));
+            const unique = [...new Set(stockData.map(s => s.name))];
             menu.innerHTML = unique.map(name => `
-                <button onclick="showStockDetail('${name}'); toggleSidebar();" class="w-full text-left px-4 py-3 rounded-xl transition text-sm flex items-center justify-between ${currentViewContext.name === name ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}">
+                <button onclick="showStockDetail('${name}'); toggleSidebar();" class="w-full text-left px-5 py-4 rounded-2xl transition text-lg flex items-center justify-between ${currentViewContext.name === name ? 'bg-black text-white' : 'text-gray-600 bg-gray-50'}">
                     <span>${name}</span><span>${pinnedStocks.includes(name) ? '📌' : ''}</span>
                 </button>
             `).join('');
@@ -120,11 +116,14 @@
             document.getElementById('view-title').innerText = "首頁總覽";
             renderSidebar();
             const unique = [...new Set(stockData.map(s => s.name))];
-            document.getElementById('main-content').innerHTML = `<div class="grid grid-cols-2 gap-3">
+            document.getElementById('main-content').innerHTML = `<div class="grid grid-cols-1 gap-4">
                 ${unique.map(name => `
-                    <div onclick="showStockDetail('${name}')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative active:scale-95 transition">
-                        <h3 class="font-bold text-gray-800 text-sm truncate">${name}</h3>
-                        <p class="text-[10px] text-gray-400 mt-1 line-clamp-1">${stockNotes[name] || '查看報表'}</p>
+                    <div onclick="showStockDetail('${name}')" class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm active:scale-[0.98] transition flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xl text-gray-800">${name}</h3>
+                            <p class="text-sm text-gray-400 mt-1">${stockNotes[name] || '點擊進入查看詳情'}</p>
+                        </div>
+                        <span class="text-gray-300 text-2xl">❯</span>
                     </div>
                 `).join('')}
             </div>`;
@@ -134,7 +133,13 @@
             currentViewContext = { type: 'detail', name };
             document.getElementById('view-title').innerText = name;
             renderSidebar();
+            
             const filtered = stockData.filter(s => s.name === name).sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // 計算歷史最低價
+            const allPrices = filtered.map(s => s.price);
+            const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : '--';
+
             const displayData = filtered.map((entry, index) => {
                 const prev = index > 0 ? filtered[index - 1] : null;
                 const diff = prev ? (entry.price - prev.price).toFixed(2) : 0;
@@ -143,41 +148,52 @@
             }).reverse();
 
             document.getElementById('main-content').innerHTML = `
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                    <div class="flex justify-between mb-2"><p class="text-blue-500 text-[10px] font-black uppercase">除息備註</p><button onclick="togglePin('${name}')">${pinnedStocks.includes(name) ? '📌' : '📍'}</button></div>
-                    <p class="text-gray-700 text-sm mb-4 leading-relaxed">${(stockNotes[name] || '尚未紀錄...').replace(/\n/g, '<br>')}</p>
-                    <button onclick="openNoteModal('${name}')" class="w-full py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold">✎ 快速編輯備註</button>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-blue-500 text-xs font-black uppercase tracking-wider mb-1">除息備註</p>
+                            <p class="text-lg text-gray-700 leading-relaxed font-medium">${(stockNotes[name] || '尚未紀錄...').replace(/\n/g, '<br>')}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-orange-500 text-xs font-black uppercase tracking-wider mb-1">📉 歷史最低</p>
+                            <p class="text-xl font-black text-orange-600">$ ${minPrice}</p>
+                        </div>
+                    </div>
+                    <button onclick="openNoteModal('${name}')" class="w-full py-3 bg-blue-50 text-blue-600 rounded-2xl text-sm font-bold shadow-sm active:bg-blue-100 transition">✎ 編輯備註資訊</button>
                 </div>
-                <div class="bg-white rounded-3xl shadow-sm overflow-hidden mt-4">
+
+                <div class="bg-white rounded-3xl shadow-sm overflow-hidden mt-6 border border-gray-50">
+                    <div class="bg-gray-50 px-5 py-3 text-xs font-bold text-gray-400 flex justify-between tracking-widest">
+                        <span>日期 / 價格</span>
+                        <span>漲跌幅度</span>
+                    </div>
                     ${displayData.map(s => `
-                        <div class="flex items-center justify-between p-4 border-b border-gray-50 active:bg-gray-50" onclick="editEntry(${s.id})">
+                        <div class="flex items-center justify-between p-5 border-b border-gray-50 active:bg-gray-50" onclick="editEntry(${s.id})">
                             <div class="flex flex-col">
-                                <span class="text-[10px] text-gray-400 font-bold">${s.date}</span>
-                                <span class="text-md font-black text-gray-800">$ ${s.price}</span>
+                                <span class="text-xs text-gray-400 font-bold mb-1">${s.date}</span>
+                                <span class="text-2xl font-black text-gray-900">$ ${s.price}</span>
                             </div>
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-4">
                                 <div class="text-right">
-                                    <div class="text-sm font-black ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.diff}</div>
-                                    <div class="text-[10px] font-bold ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.percent}%</div>
+                                    <div class="text-xl font-black ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.diff}</div>
+                                    <div class="text-sm font-bold ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.percent}%</div>
                                 </div>
-                                <button onclick="event.stopPropagation(); deleteEntry(${s.id}, '${name}')" class="text-gray-200 p-2">✕</button>
+                                <button onclick="event.stopPropagation(); deleteEntry(${s.id}, '${name}')" class="text-gray-200 p-2 text-xl">✕</button>
                             </div>
                         </div>
                     `).join('')}
                 </div>`;
         }
 
+        // --- 核心邏輯保持不變 ---
         function handleHeaderAdd() { openModal(currentViewContext.name || ''); }
-
         function openModal(preName = '') {
             document.getElementById('stockName').value = preName;
             document.getElementById('stockName').disabled = !!preName;
             document.getElementById('stockDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal').classList.replace('hidden', 'flex');
         }
-
         function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); document.getElementById('edit-id').value = ''; }
-
         function saveData() {
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('stockName').value.trim();
@@ -193,7 +209,6 @@
             localStorage.setItem('stocks_v3', JSON.stringify(stockData));
             closeModal(); showStockDetail(name);
         }
-
         function editEntry(id) {
             const entry = stockData.find(s => s.id == id);
             document.getElementById('edit-id').value = entry.id;
@@ -201,18 +216,14 @@
             document.getElementById('stockDate').value = entry.date;
             document.getElementById('stockPrice').value = entry.price;
         }
-
-        function deleteEntry(id, name) { if(confirm("確定刪除這筆記錄？")) { stockData = stockData.filter(i => i.id !== id); localStorage.setItem('stocks_v3', JSON.stringify(stockData)); showStockDetail(name); } }
-        function togglePin(name) { pinnedStocks = pinnedStocks.includes(name) ? pinnedStocks.filter(n => n !== name) : [...pinnedStocks, name]; localStorage.setItem('pinned_stocks', JSON.stringify(pinnedStocks)); showStockDetail(name); }
+        function deleteEntry(id, name) { if(confirm("確定刪除？")) { stockData = stockData.filter(i => i.id !== id); localStorage.setItem('stocks_v3', JSON.stringify(stockData)); showStockDetail(name); } }
         function openNoteModal(name) { document.getElementById('note-target-name').value = name; document.getElementById('note-content').value = stockNotes[name] || ''; document.getElementById('note-modal').classList.replace('hidden', 'flex'); }
         function closeNoteModal() { document.getElementById('note-modal').classList.replace('flex', 'hidden'); }
         function saveNote() { const name = document.getElementById('note-target-name').value; stockNotes[name] = document.getElementById('note-content').value; localStorage.setItem('stock_notes_v3', JSON.stringify(stockNotes)); closeNoteModal(); showStockDetail(name); }
-
         function exportData() {
             const backup = { stocks: stockData, notes: stockNotes, pins: pinnedStocks };
             const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `stock_backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
         }
@@ -221,7 +232,7 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = JSON.parse(e.target.result);
-                if(confirm("還原將覆蓋現有資料，是否繼續？")) {
+                if(confirm("還原將覆蓋現有資料？")) {
                     localStorage.setItem('stocks_v3', JSON.stringify(data.stocks));
                     localStorage.setItem('stock_notes_v3', JSON.stringify(data.notes));
                     localStorage.setItem('pinned_stocks', JSON.stringify(data.pins));
