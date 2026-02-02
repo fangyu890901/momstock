@@ -12,30 +12,28 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #sidebar { transition: transform 0.3s ease-in-out; }
         .sidebar-open { transform: translateX(0) !important; }
-        /* 強制加大輸入框字體防止安卓縮放 */
+        /* 防止行動裝置輸入時自動縮放 */
         input, textarea { font-size: 18px !important; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-gray-800">
 
     <header class="h-16 bg-white border-b flex items-center justify-between px-5 z-40 shrink-0">
-        <button onclick="toggleSidebar()" class="p-2 text-gray-600 text-2xl">☰</button>
-        <h1 id="view-title" class="text-xl font-bold tracking-tight">首頁總覽</h1>
-        <button onclick="handleHeaderAdd()" class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold shadow-lg">+</button>
+        <button onclick="toggleSidebar()" class="p-2 text-gray-600 text-3xl">☰</button>
+        <h1 id="view-title" class="text-xl font-black tracking-tight">首頁總覽</h1>
+        <button onclick="handleHeaderAdd()" class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">+</button>
     </header>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white z-50 border-r shadow-2xl -translate-x-full flex flex-col">
         <div class="p-6 border-b flex justify-between items-center bg-gray-50">
             <span class="font-bold italic text-xl">StockTrack</span>
-            <button onclick="toggleSidebar()" class="text-gray-400 text-2xl">✕</button>
+            <button onclick="toggleSidebar()" class="text-gray-400 text-3xl">✕</button>
         </div>
-        
-        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
-            <button onclick="showHome(); toggleSidebar();" class="w-full flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-2xl font-bold mb-6 shadow-sm border border-blue-100 text-lg">
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar space-y-4">
+            <button onclick="showHome(); toggleSidebar();" class="w-full flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-2xl font-black shadow-sm border border-blue-100 text-lg">
                 <span>🏠</span> <span>返回首頁總覽</span>
             </button>
-            
-            <div class="text-xs font-black text-gray-400 uppercase tracking-widest px-1 mb-3">持股清單</div>
+            <div class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">持股清單</div>
             <nav id="stock-list-menu" class="space-y-2"></nav>
         </div>
     </aside>
@@ -47,7 +45,7 @@
         <div class="h-24"></div>
     </main>
 
-    <footer class="h-20 bg-white border-t flex items-center justify-around z-40 shrink-0 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <footer class="h-20 bg-white border-t flex items-center justify-around z-40 shrink-0 pb-safe">
         <button onclick="showHome()" class="flex flex-col items-center gap-1 text-gray-600">
             <span class="text-2xl">🏠</span><span class="text-xs font-bold">首頁</span>
         </button>
@@ -68,9 +66,9 @@
                 <input type="text" id="stockName" class="w-full bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100 focus:border-black" placeholder="股票名稱">
                 <div class="flex gap-4">
                     <input type="date" id="stockDate" class="flex-1 bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100">
-                    <input type="number" id="stockPrice" step="0.01" class="flex-1 bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100" placeholder="收盤價" autofocus>
+                    <input type="number" id="stockPrice" step="0.01" class="flex-1 bg-gray-50 rounded-2xl p-4 outline-none border border-gray-100" placeholder="價格" autofocus>
                 </div>
-                <div class="flex gap-4 pt-4">
+                <div class="flex gap-4 pt-2">
                     <button onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold text-lg">取消</button>
                     <button onclick="saveData()" class="flex-1 py-4 bg-black text-white rounded-2xl font-bold text-lg shadow-lg">確認儲存</button>
                 </div>
@@ -105,7 +103,7 @@
             const menu = document.getElementById('stock-list-menu');
             const unique = [...new Set(stockData.map(s => s.name))];
             menu.innerHTML = unique.map(name => `
-                <button onclick="showStockDetail('${name}'); toggleSidebar();" class="w-full text-left px-5 py-4 rounded-2xl transition text-lg flex items-center justify-between ${currentViewContext.name === name ? 'bg-black text-white' : 'text-gray-600 bg-gray-50'}">
+                <button onclick="showStockDetail('${name}'); toggleSidebar();" class="w-full text-left px-5 py-4 rounded-2xl transition text-lg font-bold flex items-center justify-between ${currentViewContext.name === name ? 'bg-black text-white' : 'text-gray-600 bg-gray-50'}">
                     <span>${name}</span><span>${pinnedStocks.includes(name) ? '📌' : ''}</span>
                 </button>
             `).join('');
@@ -120,10 +118,10 @@
                 ${unique.map(name => `
                     <div onclick="showStockDetail('${name}')" class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm active:scale-[0.98] transition flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-xl text-gray-800">${name}</h3>
-                            <p class="text-sm text-gray-400 mt-1">${stockNotes[name] || '點擊進入查看詳情'}</p>
+                            <h3 class="font-black text-2xl text-gray-800">${name}</h3>
+                            <p class="text-sm text-gray-400 mt-1">${stockNotes[name] || '查看報表'}</p>
                         </div>
-                        <span class="text-gray-300 text-2xl">❯</span>
+                        <span class="text-gray-300 text-2xl font-bold">❯</span>
                     </div>
                 `).join('')}
             </div>`;
@@ -136,7 +134,7 @@
             
             const filtered = stockData.filter(s => s.name === name).sort((a, b) => new Date(a.date) - new Date(b.date));
             
-            // 計算歷史最低價
+            // 重要：計算歷史最低價
             const allPrices = filtered.map(s => s.price);
             const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : '--';
 
@@ -150,16 +148,16 @@
             document.getElementById('main-content').innerHTML = `
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-blue-500 text-xs font-black uppercase tracking-wider mb-1">除息備註</p>
-                            <p class="text-lg text-gray-700 leading-relaxed font-medium">${(stockNotes[name] || '尚未紀錄...').replace(/\n/g, '<br>')}</p>
+                        <div class="flex-1">
+                            <p class="text-blue-500 text-xs font-black uppercase tracking-wider mb-2">除息備註</p>
+                            <p class="text-xl text-gray-700 leading-relaxed font-bold">${(stockNotes[name] || '尚未紀錄...').replace(/\n/g, '<br>')}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-orange-500 text-xs font-black uppercase tracking-wider mb-1">📉 歷史最低</p>
-                            <p class="text-xl font-black text-orange-600">$ ${minPrice}</p>
+                        <div class="text-right ml-4 bg-orange-50 p-3 rounded-2xl border border-orange-100">
+                            <p class="text-orange-500 text-[10px] font-black uppercase mb-1">📉 歷史最低</p>
+                            <p class="text-2xl font-black text-orange-600">$ ${minPrice}</p>
                         </div>
                     </div>
-                    <button onclick="openNoteModal('${name}')" class="w-full py-3 bg-blue-50 text-blue-600 rounded-2xl text-sm font-bold shadow-sm active:bg-blue-100 transition">✎ 編輯備註資訊</button>
+                    <button onclick="openNoteModal('${name}')" class="w-full py-3 bg-blue-50 text-blue-600 rounded-2xl text-md font-black shadow-sm active:bg-blue-100 transition mt-2">✎ 編輯備註</button>
                 </div>
 
                 <div class="bg-white rounded-3xl shadow-sm overflow-hidden mt-6 border border-gray-50">
@@ -168,24 +166,23 @@
                         <span>漲跌幅度</span>
                     </div>
                     ${displayData.map(s => `
-                        <div class="flex items-center justify-between p-5 border-b border-gray-50 active:bg-gray-50" onclick="editEntry(${s.id})">
+                        <div class="flex items-center justify-between p-5 border-b border-gray-50 active:bg-gray-100" onclick="editEntry(${s.id})">
                             <div class="flex flex-col">
-                                <span class="text-xs text-gray-400 font-bold mb-1">${s.date}</span>
-                                <span class="text-2xl font-black text-gray-900">$ ${s.price}</span>
+                                <span class="text-sm text-gray-400 font-bold mb-1">${s.date}</span>
+                                <span class="text-3xl font-black text-gray-900">$ ${s.price}</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="text-right">
-                                    <div class="text-xl font-black ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.diff}</div>
-                                    <div class="text-sm font-bold ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.percent}%</div>
+                                    <div class="text-2xl font-black ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.diff}</div>
+                                    <div class="text-lg font-bold ${s.diff >= 0 ? 'up' : 'down'}">${s.diff > 0 ? '+' : ''}${s.percent}%</div>
                                 </div>
-                                <button onclick="event.stopPropagation(); deleteEntry(${s.id}, '${name}')" class="text-gray-200 p-2 text-xl">✕</button>
+                                <button onclick="event.stopPropagation(); deleteEntry(${s.id}, '${name}')" class="text-gray-200 p-2 text-2xl font-bold">✕</button>
                             </div>
                         </div>
                     `).join('')}
                 </div>`;
         }
 
-        // --- 核心邏輯保持不變 ---
         function handleHeaderAdd() { openModal(currentViewContext.name || ''); }
         function openModal(preName = '') {
             document.getElementById('stockName').value = preName;
@@ -216,7 +213,7 @@
             document.getElementById('stockDate').value = entry.date;
             document.getElementById('stockPrice').value = entry.price;
         }
-        function deleteEntry(id, name) { if(confirm("確定刪除？")) { stockData = stockData.filter(i => i.id !== id); localStorage.setItem('stocks_v3', JSON.stringify(stockData)); showStockDetail(name); } }
+        function deleteEntry(id, name) { if(confirm("確定刪除這筆資料？")) { stockData = stockData.filter(i => i.id !== id); localStorage.setItem('stocks_v3', JSON.stringify(stockData)); showStockDetail(name); } }
         function openNoteModal(name) { document.getElementById('note-target-name').value = name; document.getElementById('note-content').value = stockNotes[name] || ''; document.getElementById('note-modal').classList.replace('hidden', 'flex'); }
         function closeNoteModal() { document.getElementById('note-modal').classList.replace('flex', 'hidden'); }
         function saveNote() { const name = document.getElementById('note-target-name').value; stockNotes[name] = document.getElementById('note-content').value; localStorage.setItem('stock_notes_v3', JSON.stringify(stockNotes)); closeNoteModal(); showStockDetail(name); }
@@ -241,7 +238,6 @@
             };
             reader.readAsText(input.files[0]);
         }
-
         showHome();
     </script>
 </body>
